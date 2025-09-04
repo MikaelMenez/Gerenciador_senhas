@@ -1,6 +1,1 @@
-abstract class Senhas {
-    abstract val senha: String
-        fun criptografar(senha: String){
-
-        }
-}
+data class Senhas(var senha: String, var nome: String)
