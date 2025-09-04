@@ -4,7 +4,7 @@ import javax.crypto.spec.SecretKeySpec
 import java.util.Base64
 import javax.crypto.spec.IvParameterSpec
 
-class CriptografyController {
+interface Criptografy {
     companion object {
         fun encrypt(plainText: String, key: String, iv: String): String {
             val keySpec = SecretKeySpec(key.toByteArray(Charsets.UTF_8), "AES")
