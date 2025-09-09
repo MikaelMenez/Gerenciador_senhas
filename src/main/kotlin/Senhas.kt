@@ -8,21 +8,21 @@ import kotlin.use
 
 abstract class Senhas() : DAO, Criptografy {
     protected var encryptedSenha: String = ""
-    protected var nome: String = ""
-    protected var key: ByteArray = ByteArray(0)  // Armazenar como bytes
+    protected var _nome: String = ""
+        val name: String
+            get() =this._nome
+    protected var key: ByteArray = ByteArray(0)
+        // Armazenar como bytes
     protected var iv: ByteArray = ByteArray(0)    // Armazenar como bytes
 
     constructor(senha: String, nome: String) : this() {
         this.key = generateValidKey()   // 16 bytes
         this.iv = generateValidIV()     // 16 bytes
         this.encryptedSenha = encrypt(senha, key, iv)
-        this.nome = nome
+        this._nome = nome
     }
     val senhaDescriptografada: String
         get() = decrypt(encryptedSenha, key, iv)
-
-    val senhaCriptografada: String
-        get() = encryptedSenha
 
     override fun generateValidKey(): ByteArray {
         val random = SecureRandom()

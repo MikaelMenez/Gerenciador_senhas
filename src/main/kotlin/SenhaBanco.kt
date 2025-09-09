@@ -3,13 +3,18 @@ import java.util.Date
 import java.text.SimpleDateFormat
 import java.util.Locale
 class SenhaBanco : Senhas {
-    private var cvv=""
-    private var dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-    private var validade=""
-    constructor(senha: String, nome: String,cvv: Int,validade: Date):super(senha,nome){
-        this.cvv=encrypt(cvv.toString(),key,iv)
-        this.validade=encrypt(validade.toString(),key,iv)
+    constructor(senha: String, nome: String,_cvv: Int,_validade: Data):super(senha,nome){
+        this._cvv=encrypt(_cvv.toString(),key,iv)
+        this._validade=encrypt(_validade.toString(),key,iv)
     }
+    private var _cvv=""
+        val cvv
+        get()=decrypt(_cvv,key,iv)
+    private var dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    private var _validade=""
+        val validade
+        get() = decrypt(_validade,key,iv)
+
    override fun createTable(connection: Connection): java.lang.Exception? {
         try {
             connection.prepareStatement(
@@ -34,7 +39,7 @@ class SenhaBanco : Senhas {
             val senha = SenhaBanco(decrypt(resultSet.getString("senha"),key,iv),
                 resultSet.getString("nome"),
                 decrypt(resultSet.getString("cvv"),key,iv).toInt(),
-                resultSet.getDate("validade"))
+                Data.toData(resultSet.getString("validade")))
             return senha
 
     }

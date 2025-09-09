@@ -24,7 +24,7 @@ interface DAO {
             "INSERT INTO aplicativos (nome,senha) VALUES (?, ?)"
         )
         insertUsuarios.setString(1, nome)
-        insertUsuarios.setString(2, )
+        insertUsuarios.setString(2, senha)
         insertUsuarios.executeUpdate()
     }
 
