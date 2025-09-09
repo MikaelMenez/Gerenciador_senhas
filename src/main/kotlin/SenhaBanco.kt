@@ -1,9 +1,8 @@
 import java.sql.Connection
-import java.util.Date
 import java.text.SimpleDateFormat
 import java.util.Locale
 class SenhaBanco : Senhas {
-    constructor(senha: String, nome: String,_cvv: Int,_validade: Data):super(senha,nome){
+    constructor(senha: String, nome: String,_cvv: Int,_validade: Validade):super(senha,nome){
         this._cvv=encrypt(_cvv.toString(),key,iv)
         this._validade=encrypt(_validade.toString(),key,iv)
     }
@@ -39,7 +38,7 @@ class SenhaBanco : Senhas {
             val senha = SenhaBanco(decrypt(resultSet.getString("senha"),key,iv),
                 resultSet.getString("nome"),
                 decrypt(resultSet.getString("cvv"),key,iv).toInt(),
-                Data.toData(resultSet.getString("validade")))
+                Validade.toData(resultSet.getString("validade")))
             return senha
 
     }
