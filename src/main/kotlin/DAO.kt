@@ -2,7 +2,7 @@ import java.sql.Connection
 import kotlin.use
 
 interface DAO {
-    fun createDB(connection: Connection): java.lang.Exception? {
+    fun createTable(connection: Connection): java.lang.Exception? {
         try {
             connection.prepareStatement(
                 """
