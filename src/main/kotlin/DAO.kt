@@ -24,7 +24,7 @@ interface DAO {
             "INSERT INTO aplicativos (nome,senha) VALUES (?, ?)"
         )
         insertUsuarios.setString(1, nome)
-        insertUsuarios.setString(2, Criptografy.encrypt(senha,iv,key))
+        insertUsuarios.setString(2, )
         insertUsuarios.executeUpdate()
     }
 
@@ -42,12 +42,7 @@ interface DAO {
         }
     }
 
-    fun getOne(id: Int,connection: Connection): Senhas {
-        val statement=connection.createStatement()
-        val resultSet = statement.executeQuery("SELECT * FROM aplicativos WHERE id=$id")
-        val senha = Senhas(resultSet.getString("senha"), resultSet.getString("nome"))
-        return senha
-    }
+    fun getById(id: Int,connection: Connection): Senhas
 
     fun modifyName(nome: String, id: Int,connection: Connection) {
         val sql = "UPDATE aplicativos SET nome = ? WHERE id = ?"

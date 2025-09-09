@@ -38,7 +38,7 @@ abstract class Senhas() : DAO, Criptografy {
         return ivBytes
     }
 
-    fun encrypt(plainText: String, key: ByteArray, iv: ByteArray): String {
+    override fun encrypt(plainText: String, key: ByteArray, iv: ByteArray): String {
         val keySpec = SecretKeySpec(key, "AES")
         val ivSpec = IvParameterSpec(iv)
 
@@ -49,7 +49,7 @@ abstract class Senhas() : DAO, Criptografy {
         return Base64.getEncoder().encodeToString(encryptedBytes)
     }
 
-    fun decrypt(encryptedText: String, key: ByteArray, iv: ByteArray): String {
+    override fun decrypt(encryptedText: String, key: ByteArray, iv: ByteArray): String {
         val keySpec = SecretKeySpec(key, "AES")
         val ivSpec = IvParameterSpec(iv)
 
@@ -71,20 +71,7 @@ abstract class Senhas() : DAO, Criptografy {
 
 
         override fun createTable(connection: Connection): java.lang.Exception? {
-            try {
-                connection.prepareStatement(
-                    """
-                    CREATE TABLE IF NOT EXISTS aplicativos(
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    nome TEXT NOT NULL,
-                    senha TEXT UNIQUE NOT NULL
-                    )
-                   """.trimIndent()
-                )
-                return null
-            } catch (e: Exception) {
-                return e
-            }
+            return TODO("Provide the return value")
         }
 
         override fun insertData(nome: String, senha: String, connection: Connection, iv: String, key: String) {
@@ -92,7 +79,7 @@ abstract class Senhas() : DAO, Criptografy {
                 "INSERT INTO aplicativos (nome,senha) VALUES (?, ?)"
             )
             insertUsuarios.setString(1, nome)
-            insertUsuarios.setString(2, encrypt(senha,iv,key))
+            insertUsuarios.setString(2, encrypt(senha,iv.toByteArray(),key.toByteArray()))
             insertUsuarios.executeUpdate()
         }
 
@@ -110,7 +97,7 @@ abstract class Senhas() : DAO, Criptografy {
             }
         }
 
-        override fun getOne(id: Int, connection: Connection): Senhas {
+        override fun getById(id: Int, connection: Connection): Senhas {
             val statement=connection.createStatement()
             val resultSet = statement.executeQuery("SELECT * FROM aplicativos WHERE id=$id")
 

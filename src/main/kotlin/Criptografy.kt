@@ -6,8 +6,8 @@ import java.util.Base64
 import javax.crypto.spec.IvParameterSpec
 
 interface Criptografy {
-        fun encrypt(plainText: String, key: String, iv: String): String
-        fun decrypt(encryptedText: String, key: String, iv: String): String
+        fun encrypt(plainText: String, key: ByteArray, iv: ByteArray): String
+        fun decrypt(encryptedText: String, key: ByteArray, iv: ByteArray): String
         fun generateValidKey(): ByteArray
         fun generateValidIV(): ByteArray
 
