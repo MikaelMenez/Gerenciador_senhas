@@ -127,6 +127,5 @@ abstract class Senhas() : DAO, Criptografy {
                 stmt.setInt(1, id)
                 stmt.executeUpdate()
             }
-
     }
 }
