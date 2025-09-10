@@ -97,9 +97,9 @@ abstract class Senhas() : DAO, Criptografy {
             }
         }
 
-        override fun getById(id: Int, connection: Connection): Senhas {
+        override fun getByNome(nome: String, connection: Connection): Senhas {
             val statement=connection.createStatement()
-            val resultSet = statement.executeQuery("SELECT * FROM aplicativos WHERE id=$id")
+            val resultSet = statement.executeQuery("SELECT * FROM aplicativos WHERE nome=$nome")
 
             return TODO("Provide the return value")
         }

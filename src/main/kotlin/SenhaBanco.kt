@@ -9,7 +9,6 @@ class SenhaBanco : Senhas {
     private var _cvv=""
         val cvv
         get()=decrypt(_cvv,key,iv)
-    private var dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     private var _validade=""
         val validade
         get() = decrypt(_validade,key,iv)
@@ -32,13 +31,13 @@ class SenhaBanco : Senhas {
             return e
         }
     }
-    override fun getById(id: Int, connection: Connection): Senhas {
+    override fun getByNome(nome: String, connection: Connection): Senhas {
             val statement=connection.createStatement()
-            val resultSet = statement.executeQuery("SELECT * FROM aplicativos WHERE id=$id")
+            val resultSet = statement.executeQuery("SELECT * FROM aplicativos WHERE nome=$_nome")
             val senha = SenhaBanco(decrypt(resultSet.getString("senha"),key,iv),
                 resultSet.getString("nome"),
                 decrypt(resultSet.getString("cvv"),key,iv).toInt(),
-                Validade.toData(resultSet.getString("validade")))
+                Validade.toValidade(resultSet.getString("validade")))
             return senha
 
     }

@@ -20,7 +20,7 @@ class Validade {
 
     }
     companion object {
-        fun toData(data: String):Validade{
+        fun toValidade(data: String):Validade{
         data.replace("/","")
         var date=Validade(data.substring(0,1).toInt(),data.removeRange(0,1).toInt())
         return date

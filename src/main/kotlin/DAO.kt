@@ -42,7 +42,7 @@ interface DAO {
         }
     }
 
-    fun getById(id: Int,connection: Connection): Senhas
+    fun getByNome(nome: String,connection: Connection): Senhas
 
     fun modifyName(nome: String, id: Int,connection: Connection) {
         val sql = "UPDATE aplicativos SET nome = ? WHERE id = ?"
