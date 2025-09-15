@@ -1,7 +1,6 @@
 import java.security.SecureRandom
 import java.sql.Connection
 import java.sql.DriverManager
-import java.sql.PreparedStatement
 import java.util.Base64
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
@@ -14,26 +13,26 @@ abstract class Senhas() : DAO, Criptografy {
     protected var _nome: String = ""
         val name: String
             get() =this._nome
-    protected var key: ByteArray = ByteArray(0)
+    protected var salt: ByteArray = ByteArray(0)
         // Armazenar como bytes
     protected var iv: ByteArray = ByteArray(0)
     var connection: Connection= DriverManager.getConnection("jdbc:sqlite:gerenciador.db")
     // Armazenar como bytes
 
     constructor(senha: String, nome: String) : this() {
-        this.key = generateValidKey()   // 16 bytes
+        this.salt = generateValidSalt()   // 16 bytes
         this.iv = generateValidIV()     // 16 bytes
-        this.encryptedSenha = encrypt(senha, key, iv)
+        this.encryptedSenha = encrypt(senha, salt, iv)
         this._nome = nome
     }
     val senhaDescriptografada: String
-        get() = decrypt(encryptedSenha, key, iv)
+        get() = decrypt(encryptedSenha, salt, iv)
 
-    override fun generateValidKey(): ByteArray {
+    override fun generateValidSalt(): ByteArray {
         val random = SecureRandom()
-        val keyBytes = ByteArray(16) // 16 bytes = 128 bits
-        random.nextBytes(keyBytes)
-        return keyBytes
+        val saltBytes = ByteArray(16) // 16 bytes = 128 bits
+        random.nextBytes(saltBytes)
+        return saltBytes
     }
 
     override fun generateValidIV(): ByteArray {
@@ -43,31 +42,31 @@ abstract class Senhas() : DAO, Criptografy {
         return ivBytes
     }
 
-    override fun encrypt(plainText: String, key: ByteArray, iv: ByteArray): String {
-        val keySpec = SecretKeySpec(key, "AES")
+    override fun encrypt(plainText: String, salt: ByteArray, iv: ByteArray): String {
+        val saltSpec = SecretKeySpec(salt, "AES")
         val ivSpec = IvParameterSpec(iv)
 
         val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-        cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec)
+        cipher.init(Cipher.ENCRYPT_MODE, saltSpec, ivSpec)
 
         val encryptedBytes = cipher.doFinal(plainText.toByteArray(Charsets.UTF_8))
         return Base64.getEncoder().encodeToString(encryptedBytes)
     }
 
-    override fun decrypt(encryptedText: String, key: ByteArray, iv: ByteArray): String {
-        val keySpec = SecretKeySpec(key, "AES")
+    override fun decrypt(encryptedText: String, salt: ByteArray, iv: ByteArray): String {
+        val saltSpec = SecretKeySpec(salt, "AES")
         val ivSpec = IvParameterSpec(iv)
 
         val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-        cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec)
+        cipher.init(Cipher.DECRYPT_MODE, saltSpec, ivSpec)
 
         val encryptedBytes = Base64.getDecoder().decode(encryptedText)
         val decryptedBytes = cipher.doFinal(encryptedBytes)
         return String(decryptedBytes, Charsets.UTF_8)
     }
 
-    fun getKeyAsString(): String {
-        return Base64.getEncoder().encodeToString(key)
+    fun getsaltAsString(): String {
+        return Base64.getEncoder().encodeToString(salt)
     }
 
     fun getIVAsString(): String {
@@ -98,12 +97,7 @@ abstract class Senhas() : DAO, Criptografy {
         val resultSet = statement.executeQuery()
 
         return if (resultSet.next()) {
-            Senhas(
-                id = resultSet.getInt("id"),
-                nome = resultSet.getString("nome"),
-                senha = resultSet.getString("senha"),
-                // adicione outros campos conforme sua tabela
-            )
+            TODO("polimorfism")
         } else {
             throw NoSuchElementException("Nenhum registro encontrado para o nome: $nome")
         }
