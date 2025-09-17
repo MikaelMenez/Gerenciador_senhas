@@ -2,38 +2,14 @@ import java.sql.Connection
 import kotlin.use
 
 interface DAO {
-    fun createTable(connection: Connection): java.lang.Exception? {
-        try {
-            connection.prepareStatement(
-                """
-                    CREATE TABLE IF NOT EXISTS aplicativos(
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    nome TEXT NOT NULL,
-                    senha TEXT UNIQUE NOT NULL
-                    )
-                   """.trimIndent()
-            )
-            return null
-        } catch (e: Exception) {
-            return e
-        }
-    }
+    fun createTable(connection: Connection): java.lang.Exception?
 
-    fun insertData(nome: String, senha: String,iv: String,salt: String) {
-        val insertUsuarios = connection.prepareStatement(
-            "INSERT INTO aplicativos (nome,senha) VALUES (?, ?)"
-        )
-        insertUsuarios.setString(1, nome)
-        insertUsuarios.setString(2, senha)
-        insertUsuarios.executeUpdate()
-    }
+    fun insertData(senhas: Senhas): Exception?
 
-    fun getByNome(senha:Senhas): Senhas
+    fun getByNome(senha:Senhas,master_senha: String): Senhas?
 
-    fun modifyName(nome: String, id: Int)
+    fun modify( id: Int,senhas: Senhas): Exception?
 
 
-    fun modifyPassword(senha: String, id: Int)
-
-    fun deleteByNome(nome: String)
+    fun deleteByNome(nome: String): Exception?
 }
