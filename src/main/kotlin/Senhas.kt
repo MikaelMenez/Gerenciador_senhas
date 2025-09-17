@@ -24,6 +24,8 @@ abstract class Senhas() : DAO, Criptografy {
     val senhaDescriptografada: String
         get() = decrypt(encryptedSenha, key, iv)
 
+    fun getNome(): String = _nome
+
     override fun generateValidKey(): ByteArray {
         val random = SecureRandom()
         val keyBytes = ByteArray(16) // 16 bytes = 128 bits
