@@ -1,42 +1,136 @@
 import java.sql.Connection
-class SenhaBanco : Senhas {
-    constructor(senha: String, nome: String,_cvv: Int,_validade: Validade):super(senha,nome){
-        this._cvv=encrypt(_cvv.toString(),key,iv)
-        this._validade=encrypt(_validade.toString(),key,iv)
-    }
-    private var _cvv=""
-        val cvv
-        get()=decrypt(_cvv,key,iv)
-    private var _validade=""
-        val validade
-        get() = decrypt(_validade,key,iv)
+import java.util.Base64
 
-   override fun createTable(connection: Connection): java.lang.Exception? {
+class SenhaBanco(senha: String, override var _nome: String,master_senha: String) : Senhas(senha, _nome,master_senha) {
+
+    // Construtor secundário
+    constructor(senha: String, _nome: String, _cvv: Int, _validade: Validade,master_senha: String) : this(senha, _nome,master_senha) {
+        this._cvv = encrypt(_cvv.toString(), master_senha ,salt, iv)
+        this._validade = encrypt(_validade.toString(), master_senha,salt, iv)
+    }
+
+    private var _cvv = ""
+    fun getCVV(): String{
+        return this._cvv
+    }
+
+
+    private var _validade = ""
+    fun getValidade(): String {
+        return this._validade
+    }
+    override fun createTable(connection: Connection): Exception? {
         try {
-            connection.prepareStatement(
+            val statement = connection.prepareStatement(
                 """
-                    CREATE TABLE IF NOT EXISTS aplicativos(
+                CREATE TABLE IF NOT EXISTS aplicativos_banco(
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     nome TEXT NOT NULL,
-                    senha TEXT UNIQUE NOT NULL,
-                    cvv TEXT UNIQUE NOT NULL,
-                    validade TEXT UNIQUE NOT NULL
-                    )
-                   """.trimIndent()
+                    senha TEXT NOT NULL,
+                    cvv TEXT NOT NULL,
+                    validade TEXT NOT NULL,
+                    salt TEXT NOT NULL,
+                    iv TEXT NOT NULL
+                )
+                """.trimIndent()
             )
+            statement.execute()
             return null
         } catch (e: Exception) {
             return e
         }
     }
-    override fun getByNome(nome: String, connection: Connection): Senhas {
-            val statement=connection.createStatement()
-            val resultSet = statement.executeQuery("SELECT * FROM aplicativos WHERE nome=$_nome")
-            val senha = SenhaBanco(decrypt(resultSet.getString("senha"),key,iv),
-                resultSet.getString("nome"),
-                decrypt(resultSet.getString("cvv"),key,iv).toInt(),
-                Validade.toValidade(resultSet.getString("validade")))
-            return senha
 
+    override fun getByNome(senhaObj: Senhas,master_senha: String): Senhas? {
+        try {
+            val statement = connection.createStatement()
+            val resultSet = statement.executeQuery("SELECT * FROM aplicativos_banco WHERE _nome='${senhaObj.getNome()}'")
+
+            if (resultSet.next()) {
+                // Recupera salt e iv do banco
+                val dbSalt = Base64.getDecoder().decode(resultSet.getString("salt"))
+                val dbIv = Base64.getDecoder().decode(resultSet.getString("iv"))
+
+                return SenhaBanco(
+                    decrypt(resultSet.getString("senha"), master_senha,dbSalt, dbIv),
+                    resultSet.getString("_nome"),
+                    decrypt(resultSet.getString("cvv"), master_senha,dbSalt, dbIv).toInt(),
+                    Validade.toValidade(decrypt(resultSet.getString("validade"), master_senha,dbSalt, dbIv))
+                    ,master_senha
+                )
+            }
+            return null
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return null
+        }
     }
+
+    override fun modify(id: Int, senhas: Senhas): Exception? {
+        if (senhas is SenhaBanco) {
+        try {
+
+
+            val insertStatement = connection.prepareStatement(
+                "INSERT INTO aplicativos_banco (_nome, senha, cvv, validade, salt, iv) VALUES (?, ?, ?, ?, ?, ?)"
+            )
+            insertStatement.setString(1, senhas.getSenhaCriptografada())
+            insertStatement.setString(2, senhas.getNome())
+            insertStatement.setString(3, senhas.getCVV())
+            insertStatement.setString(4, senhas.getValidade())
+            insertStatement.setString(5, senhas.getsaltAsString())
+            insertStatement.setString(6, senhas.getIVAsString())
+            insertStatement.executeUpdate()
+            return null
+        }catch (e: Exception){
+            return e
+        }
+        }
+        else{
+            return Exception()
+        }
+    }
+
+    override fun deleteByNome(nome: String): Exception? {
+        try {
+
+
+            val insertStatement = connection.prepareStatement(
+                "DELETE FROM aplicativos_banco WHERE nome=?"
+            )
+            insertStatement.setString(1,nome)
+            insertStatement.execute()
+
+            return null
+        }catch (e: Exception){
+            return e
+        }
+    }
+
+    // Método para inserir dados específicos do banco
+    override fun insertData(senhas: Senhas) : Exception?{
+        if (senhas is SenhaBanco) {
+        try {
+
+
+        val insertStatement = connection.prepareStatement(
+            "'UPDATE aplicativos_banco SET senha=?, nome=?, cvv=?, validade=?, salt=?, iv=? WHERE id=?'"
+        )
+        insertStatement.setString(1, senhas.getSenhaCriptografada())
+        insertStatement.setString(2, senhas.getNome())
+        insertStatement.setString(3, senhas.getCVV())
+        insertStatement.setString(4, senhas.getValidade())
+        insertStatement.setString(5, senhas.getsaltAsString())
+        insertStatement.setString(6, senhas.getIVAsString())
+        insertStatement.executeUpdate()
+            return null
+    }catch (e: Exception){
+        return e
+    }
+
+        }
+        else{
+            return Exception()
+        }
+}
 }

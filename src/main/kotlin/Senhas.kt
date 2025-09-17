@@ -1,38 +1,61 @@
 import java.security.SecureRandom
 import java.sql.Connection
+import java.sql.DriverManager
 import java.util.Base64
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import javax.crypto.Cipher
+import javax.crypto.SecretKeyFactory
+import javax.crypto.spec.PBEKeySpec
 import kotlin.use
 
 abstract class Senhas() : DAO, Criptografy {
     protected var encryptedSenha: String = ""
-    protected var _nome: String = ""
-        val name: String
-            get() =this._nome
-    protected var key: ByteArray = ByteArray(0)
-        // Armazenar como bytes
-    protected var iv: ByteArray = ByteArray(0)    // Armazenar como bytes
+    fun getSenhaCriptografada(): String{
+        return this.encryptedSenha
+    }
+    protected open var _nome: String = ""
+    fun getNome(): String {
+        return this._nome
+    }
 
-    constructor(senha: String, nome: String) : this() {
-        this.key = generateValidKey()   // 16 bytes
+    protected var salt: ByteArray = ByteArray(0)
+    fun getSalt(): String{
+        return this.salt.toString()
+    }
+        // Armazenar como bytes
+    protected var iv: ByteArray = ByteArray(0)
+    fun getIV(): String{
+        return this.iv.toString()
+    }
+    var connection: Connection= DriverManager.getConnection("jdbc:sqlite:gerenciador.db")
+    // Armazenar como bytes
+
+    constructor(senha: String, nome: String,master_senha: String) : this() {
+        this.salt = generateValidSalt()   // 16 bytes
         this.iv = generateValidIV()     // 16 bytes
-        this.encryptedSenha = encrypt(senha, key, iv)
+        this.encryptedSenha = encrypt(senha, master_senha ,salt, iv)
         this._nome = nome
     }
-    val senhaDescriptografada: String
-        get() = decrypt(encryptedSenha, key, iv)
-
-    fun getNome(): String = _nome
-
-    override fun generateValidKey(): ByteArray {
+        fun getSenhaDecriptografada(master_senha: String): String {
+            return decrypt(encryptedSenha, master_senha ,salt, iv)
+        }
         val random = SecureRandom()
-        val keyBytes = ByteArray(16) // 16 bytes = 128 bits
-        random.nextBytes(keyBytes)
-        return keyBytes
+        val saltBytes = ByteArray(16) // 16 bytes = 128 bits
+        random.nextBytes(saltBytes)
+        return saltBytes
     }
+    override fun deriveKey(password: String, salt: ByteArray): ByteArray {
+        val spec = PBEKeySpec(
+            password.toCharArray(),
+            salt,
+            100000,     // 100.000 iterações
+            256         // 256 bits = 32 bytes
+        )
 
+        val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
+        return factory.generateSecret(spec).encoded
+    }
     override fun generateValidIV(): ByteArray {
         val random = SecureRandom()
         val ivBytes = ByteArray(16) // 16 bytes = 128 bits (EXATAMENTE)
@@ -40,7 +63,8 @@ abstract class Senhas() : DAO, Criptografy {
         return ivBytes
     }
 
-    override fun encrypt(plainText: String, key: ByteArray, iv: ByteArray): String {
+    override fun encrypt(plainText: String, master_senha: String, salt: ByteArray, iv: ByteArray): String {
+        val key=deriveKey(master_senha,salt)
         val keySpec = SecretKeySpec(key, "AES")
         val ivSpec = IvParameterSpec(iv)
 
@@ -51,7 +75,8 @@ abstract class Senhas() : DAO, Criptografy {
         return Base64.getEncoder().encodeToString(encryptedBytes)
     }
 
-    override fun decrypt(encryptedText: String, key: ByteArray, iv: ByteArray): String {
+    override fun decrypt(encryptedText: String,master_senha: String, salt: ByteArray, iv: ByteArray): String {
+        val key=deriveKey(master_senha,salt)
         val keySpec = SecretKeySpec(key, "AES")
         val ivSpec = IvParameterSpec(iv)
 
@@ -63,8 +88,8 @@ abstract class Senhas() : DAO, Criptografy {
         return String(decryptedBytes, Charsets.UTF_8)
     }
 
-    fun getKeyAsString(): String {
-        return Base64.getEncoder().encodeToString(key)
+    fun getsaltAsString(): String {
+        return Base64.getEncoder().encodeToString(salt)
     }
 
     fun getIVAsString(): String {
@@ -72,62 +97,17 @@ abstract class Senhas() : DAO, Criptografy {
     }
 
 
-        override fun createTable(connection: Connection): java.lang.Exception? {
-            return TODO("Provide the return value")
-        }
+        override abstract fun createTable(connection: Connection): java.lang.Exception?
 
-        override fun insertData(nome: String, senha: String, connection: Connection, iv: String, key: String) {
-            val insertUsuarios = connection.prepareStatement(
-                "INSERT INTO aplicativos (nome,senha) VALUES (?, ?)"
-            )
-            insertUsuarios.setString(1, nome)
-            insertUsuarios.setString(2, encrypt(senha,iv.toByteArray(),key.toByteArray()))
-            insertUsuarios.executeUpdate()
-        }
+        override abstract fun insertData(senhas: Senhas): Exception?
 
-        override fun showAll(connection: Connection) {
-            val statement=connection.createStatement()
-            val resultSet = statement.executeQuery("SELECT * FROM aplicativos")
-            while (resultSet.next()) {
-                println(
-                    "ID: ${resultSet.getInt("id")}, Nome: ${resultSet.getString("nome")}, Senha: ${
-                        resultSet.getString(
-                            "senha"
-                        )
-                    }"
-                )
-            }
-        }
 
-        override fun getByNome(nome: String, connection: Connection): Senhas {
-            val statement=connection.createStatement()
-            val resultSet = statement.executeQuery("SELECT * FROM aplicativos WHERE nome=$nome")
 
-            return TODO("Provide the return value")
-        }
+    override abstract fun getByNome(senhas: Senhas,master_senha: String): Senhas?;
 
-        override fun modifyName(nome: String, id: Int, connection: Connection) {
-            val sql = "UPDATE aplicativos SET nome = ? WHERE id = ?"
-            connection.prepareStatement(sql).use { stmt ->
-                stmt.setString(1, nome)
-                stmt.setInt(2, id)
-                stmt.executeUpdate()
-            }
-        }
 
-        override fun modifyPassword(senha: String, id: Int, connection: Connection) {
-            val sql = "UPDATE aplicativos SET senha = ? WHERE id = ?"
-            connection.prepareStatement(sql).use { stmt ->
-                stmt.setString(1, senha)
-                stmt.setInt(2, id)
-                stmt.executeUpdate()
-            }
-        }
-        override fun deleteById(id: Int, connection: Connection) {
-            val sql = "DELETE FROM aplicativos WHERE id = ?"
-            connection.prepareStatement(sql).use { stmt ->
-                stmt.setInt(1, id)
-                stmt.executeUpdate()
-            }
-    }
+        override abstract fun modify(id: Int,senhas: Senhas): Exception?
+
+
+    override abstract fun deleteByNome(nome:String) : Exception?
 }

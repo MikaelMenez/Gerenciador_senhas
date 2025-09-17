@@ -4,10 +4,10 @@ import java.util.ArrayList;
 
 public class Front {
     public ArrayList<SenhaBanco> senhasB;
-    public ArrayList<SenhaGeral> senhasG;
+    public ArrayList<Senha> senhas;
     public String senhaMestre = null;
 
-    public Front(ArrayList<SenhaBanco> senhasB, ArrayList<SenhaGeral> senhasG) {
+    public Front(ArrayList<SenhaBanco> senhasB, ArrayList<senha> senhasG) {
         this.senhasB = senhasB;
         this.senhasG = senhasG;
     }
@@ -80,7 +80,7 @@ public class Front {
                 nome = JOptionPane.showInputDialog("Digite o nome do Titular");
                 cvv = Integer.parseInt(JOptionPane.showInputDialog("Digite a chave ce criptografia"));
 
-                SenhaGeral senhaNovaG = new SenhaGeral(senha, nome, cvv);
+                senha senhaNovaG = new senha(senha, nome);
 
                 senhasG.add(senhaNovaG);
 
