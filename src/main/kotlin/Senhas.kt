@@ -40,8 +40,6 @@ abstract class Senhas() : DAO, Criptografy {
         fun getSenhaDecriptografada(master_senha: String): String {
             return decrypt(encryptedSenha, master_senha ,salt, iv)
         }
-
-    override fun generateValidSalt(): ByteArray {
         val random = SecureRandom()
         val saltBytes = ByteArray(16) // 16 bytes = 128 bits
         random.nextBytes(saltBytes)
