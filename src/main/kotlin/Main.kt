@@ -1,7 +1,12 @@
+import javax.swing.JOptionPane
+
 fun main(){
-   var date= Validade(6,2006)
+   JOptionPane.showMessageDialog(null, "Bem Vindo ao Gerensenhador")
+   var senhaMestra: String
 
-   val senhas=SenhaBanco("1234","app",123,date)
-print(senhas.validade)
+       senhaMestra= JOptionPane.showInputDialog("Digite a senha mestre")
 
+
+   val front=Front(senhaMestra)
+   front.start()
 }

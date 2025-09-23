@@ -10,6 +10,6 @@ interface DAO {
 
     fun modify( id: Int,senhas: Senhas): Exception?
 
-
     fun deleteByNome(nome: String): Exception?
+
 }

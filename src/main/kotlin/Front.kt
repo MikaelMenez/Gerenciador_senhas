@@ -1,210 +1,145 @@
 import javax.swing.JOptionPane
 
 class Front {
-    var senhasB: ArrayList<SenhaBanco?>
-    var senhasG: ArrayList<SenhaGeral?>
+    var senhasB: HashMap<String, SenhaBanco>?
+    var senhasG: HashMap<String, SenhaGeral>?
     var senhaMestre: String? = null
 
-    constructor(senhasB: ArrayList<SenhaBanco?>, senhasG: ArrayList<SenhaGeral?>) {
-        this.senhasB = senhasB
-        this.senhasG = senhasG
+    constructor(master_senha: String) {
+        senhasB = SenhaBanco.getAll(master_senha) ?: HashMap()
+        senhasG = SenhaGeral.getAll(master_senha) ?: HashMap()
+        senhaMestre = master_senha
     }
 
-    constructor() {
-        senhasB = ArrayList<SenhaBanco?>()
-        senhasG = ArrayList<SenhaGeral?>()
+    fun start() {
+        open()
     }
 
-    fun Start() {
-        JOptionPane.showMessageDialog(null, "Bem Vindo ao Gerensenhador")
-        if (senhaMestre == null) {
-            this.senhaMestre = JOptionPane.showInputDialog("Cadastre uma senha mestre para Iniciar o APP")
-            Open()
-        } else {
-            val senhaMestra = JOptionPane.showInputDialog("Faça login no APP com sua senha mestre cadastrada")
-            if (senhaMestra === this.senhaMestre) {
-                Open()
-            } else {
-                JOptionPane.showMessageDialog(null, "Erro, senha mestre incorreta, tente novamente")
-                Start()
-            }
-        }
-    }
-
-    fun Open() {
+    fun open() {
         JOptionPane.showMessageDialog(
-            null, "Para Cadastrar Senha, Digite: 1\n" +
+            null, "Para cadastrar Senha, Digite: 1\n" +
                     "Para Acessar Senhas, Digite: 2\n" +
                     "...\n" +
                     "Para Fechar o APP, Digite: 9"
         )
-        val opcao = JOptionPane.showInputDialog("Qual ação deve ser executada?").toInt()
+        val opcao = JOptionPane.showInputDialog("Qual ação deve ser executada?")?.toIntOrNull()
         when (opcao) {
-            (1) -> {
-                Cadastra()
-            }
-
-            (2) -> {
-                SelecaoMenu()
-            }
-
-            (9) -> {
-                JOptionPane.showMessageDialog(null, "Até o próximo Gerensenhamento")
-            }
-
+            1 -> cadastra()
+            2 -> selecaoMenu()
+            9 -> JOptionPane.showMessageDialog(null, "Até o próximo Gerensenhamento")
             else -> {
                 JOptionPane.showMessageDialog(null, "Ação inválida, tente novamente")
-                Open()
+                open()
             }
         }
     }
 
-    fun Cadastra() {
+    fun cadastra() {
         val opcao = JOptionPane.showInputDialog(
             "Para cadastrar Senha de Banco, digite: 1\n" +
                     "Para cadastrar Senha Geral, Digite: 2\n" +
                     "Para voltar ao menu anterior, Digite: 3"
-        ).toInt()
+        )?.toIntOrNull()
 
-        var senha: String
-        var nome: String
-        var cvv: Int
+        if (opcao == null) {
+            JOptionPane.showMessageDialog(null, "Entrada inválida, tente novamente")
+            cadastra()
+            return
+        }
 
         when (opcao) {
-            (1) -> {
-                senha = JOptionPane.showInputDialog("Digite sua nova senha")
-                nome = JOptionPane.showInputDialog("Digite o nome do Titular")
-                cvv = JOptionPane.showInputDialog("Digite a chave ce criptografia").toInt()
-                val mes = JOptionPane.showInputDialog("Digite o mês de validade").toInt()
-                val ano = JOptionPane.showInputDialog("Digite o ano de validade").toInt()
-
-                val data = Validade(mes, ano)
-                val senhaNova = SenhaBanco(senha, nome, cvv, data)
-
-                senhasB.add(senhaNova)
+            1 -> {
+                val senha = JOptionPane.showInputDialog("Digite sua nova senha") ?: ""
+                val nome = JOptionPane.showInputDialog("Digite o nome do Titular") ?: ""
+                val cvv = JOptionPane.showInputDialog("Digite o cvv")?.toIntOrNull() ?: 0
+                val data = Validade.toValidade(JOptionPane.showInputDialog("Digite a validade") ?: "")
+                val senhaNova = SenhaBanco(senha, nome, cvv, data, senhaMestre ?: "")
+                senhaNova.insertData(senhaNova)
+                senhasB?.put(senhaNova.getNome(), senhaNova)
                 JOptionPane.showMessageDialog(null, "Senha nova Adicionada com sucesso!")
-                Open()
+                open()
             }
-
-            (2) -> {
-                senha = JOptionPane.showInputDialog("Digite sua nova senha")
-                nome = JOptionPane.showInputDialog("Digite o nome da sua Senha")
-                cvv = JOptionPane.showInputDialog("Digite a chave de criptografia").toInt()
-
-                val senhaNovaG = SenhaGeral(senha, nome, cvv)
-
-                senhasG.add(senhaNovaG)
-
+            2 -> {
+                val senha = JOptionPane.showInputDialog("Digite sua nova senha") ?: ""
+                val nome = JOptionPane.showInputDialog("Digite o nome da sua Senha") ?: ""
+                val senhaNovaG = SenhaGeral(senha, nome, senhaMestre ?: "")
+                senhaNovaG.insertData(senhaNovaG)
+                senhasG?.put(senhaNovaG.getNome(), senhaNovaG)
                 JOptionPane.showMessageDialog(null, "Senha nova Adicionada com sucesso!")
-                Open()
+                open()
             }
-
-            (3) -> {
-                Open()
-            }
-
+            3 -> open()
             else -> {
                 JOptionPane.showMessageDialog(null, "Ação inválida, tente novamente")
-                Cadastra()
+                cadastra()
             }
         }
     }
 
-    fun SelecaoMenu() {
-        val escolha =
-            JOptionPane.showInputDialog("Para consultar senhas de Banco: Digite 1 \nPara consultar senhas Gerais: Digite 2 \nPara retornar ao menu anterior: Digite 3")
-                .toInt()
+    fun selecaoMenu() {
+        val escolha = JOptionPane.showInputDialog(
+            "Para consultar senhas de Banco: Digite 1 \n" +
+                    "Para consultar senhas Gerais: Digite 2 \n" +
+                    "Para retornar ao menu anterior: Digite 3"
+        )?.toIntOrNull()
 
         when (escolha) {
-            (1) -> {
-                if(senhasB.size < 1){
+            1 -> {
+                if (senhasB.isNullOrEmpty()) {
                     JOptionPane.showMessageDialog(null, "Você não possui senhas de banco cadastradas")
-                    Open()
-                }
-                else {
-                    MenuBanco()
-                }
+                    open()
+                } else MenuBanco()
             }
-
-            (2) -> {
-                if(senhasG.size < 1){
+            2 -> {
+                if (senhasG.isNullOrEmpty()) {
                     JOptionPane.showMessageDialog(null, "Você não possui senhas cadastradas")
-                    Open()
-                }
-                else {
-                    MenuGeral()
-                }
+                    open()
+                } else menuGeral()
             }
-
-            (3) -> {
-                Open()
-            }
-
+            3 -> open()
             else -> {
                 JOptionPane.showMessageDialog(null, "Ação inválida, tente novamente")
-                SelecaoMenu()
+                selecaoMenu()
             }
         }
     }
 
     fun MenuBanco() {
-        JOptionPane.showMessageDialog(null, "Você tem" + senhasB.size + " senhas de Banco")
+        JOptionPane.showMessageDialog(null, "Você tem ${senhasB?.size ?: 0} senhas de Banco")
 
-        try {
-            val indexBusca =
-                JOptionPane.showInputDialog("Qual o dentre suas " + senhasB.size + " você deseja acessar? (digite um número de 1 à " + senhasB.size + ")")
-                    .toInt() - 1
+        val nomeBusca = JOptionPane.showInputDialog("Digite o nome do titular da senha que deseja acessar:")
 
-            if (indexBusca > senhasB.size) {
-                JOptionPane.showMessageDialog(null, "Index de busca inexistente, tente novamente!")
-                MenuBanco()
-            }
-
-            val nome: String?
-            val senha = senhasB.get(indexBusca)
-            if (senha != null) {
-                nome = senha.getNome()
-            } else {
-                nome = "Nome não encontrado"
-            }
-            JOptionPane.showMessageDialog(null, "Nome do Títular: " + nome)
-            JOptionPane.showMessageDialog(null, "Senha do Cartão: " + senhasB.get(indexBusca)!!.senhaDescriptografada)
-            JOptionPane.showMessageDialog(null, "Validade do Cartão: 0" + senhasB.get(indexBusca)!!.validade.toString())
-        } catch (e: Exception) {
-            println(e)
-            JOptionPane.showMessageDialog(null, "Erro de execução, tente novamente!")
+        if (nomeBusca.isNullOrBlank() || !senhasB!!.containsKey(nomeBusca)) {
+            JOptionPane.showMessageDialog(null, "Nome não encontrado, tente novamente!")
             MenuBanco()
+            return
         }
-        Open()
+
+        val senha = senhasB!![nomeBusca]!!
+
+        JOptionPane.showMessageDialog(null, "Nome do Títular: ${senha.getNome()}")
+        JOptionPane.showMessageDialog(null, "Senha do Cartão: ${senha.getSenhaDecriptografada(senhaMestre ?: "")}")
+        JOptionPane.showMessageDialog(null, "Validade do Cartão: ${senha.getValidade()}")
+
+        open()
     }
 
-    fun MenuGeral() {
-        JOptionPane.showMessageDialog(null, "Você tem" + senhasG.size + " senhas")
+    fun menuGeral() {
+        JOptionPane.showMessageDialog(null, "Você tem ${senhasG?.size ?: 0} senhas")
 
-        try {
-            val indexBusca =
-                JOptionPane.showInputDialog("Qual o dentre suas " + senhasG.size + " você deseja acessar? (digite um número de 1 à " + senhasG.size + ")")
-                    .toInt() - 1
+        val nomeBusca = JOptionPane.showInputDialog("Digite o nome da senha que deseja acessar:")
 
-            if (indexBusca > senhasG.size) {
-                JOptionPane.showMessageDialog(null, "Index de busca inexistente, tente novamente!")
-                MenuBanco()
-            }
-
-            val nome: String?
-            val senha = senhasG.get(indexBusca)
-            if (senha != null) {
-                nome = senha.getNome()
-            } else {
-                nome = "Nome não encontrado"
-            }
-            JOptionPane.showMessageDialog(null, "Título da Senha: " + nome)
-            JOptionPane.showMessageDialog(null, "Senha: " + senhasG.get(indexBusca)!!.senhaDescriptografada)
-        } catch (e: Exception) {
-            println(e)
-            JOptionPane.showMessageDialog(null, "Erro de execução, tente novamente!")
-            MenuBanco()
+        if (nomeBusca.isNullOrBlank() || !senhasG!!.containsKey(nomeBusca)) {
+            JOptionPane.showMessageDialog(null, "Nome não encontrado, tente novamente!")
+            menuGeral()
+            return
         }
-        Open()
+
+        val senha = senhasG!![nomeBusca]!!
+
+        JOptionPane.showMessageDialog(null, "Título da Senha: ${senha.getNome()}")
+        JOptionPane.showMessageDialog(null, "Senha: ${senha.getSenhaDecriptografada(senhaMestre ?: "")}")
+
+        open()
     }
 }

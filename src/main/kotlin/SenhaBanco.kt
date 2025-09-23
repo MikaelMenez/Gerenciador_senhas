@@ -1,4 +1,6 @@
 import java.sql.Connection
+import java.sql.DriverManager
+import java.sql.ResultSet
 import java.util.Base64
 
 class SenhaBanco(senha: String, override var _nome: String,master_senha: String) : Senhas(senha, _nome,master_senha) {
@@ -107,7 +109,6 @@ class SenhaBanco(senha: String, override var _nome: String,master_senha: String)
         }
     }
 
-    // Método para inserir dados específicos do banco
     override fun insertData(senhas: Senhas) : Exception?{
         if (senhas is SenhaBanco) {
         try {
@@ -133,4 +134,34 @@ class SenhaBanco(senha: String, override var _nome: String,master_senha: String)
             return Exception()
         }
 }
+    companion object{
+      fun getAll(master_senha: String): HashMap<String, SenhaBanco>?{
+        var senhas= HashMap<String,SenhaBanco>()
+          var connection: Connection= DriverManager.getConnection("jdbc:sqlite:gerenciador.db")
+        try {
+
+
+            val insertStatement = connection.createStatement()
+            val resultSet: ResultSet =insertStatement.executeQuery(
+                "SELECT * FROM aplicativos_banco"
+            )
+
+            while (resultSet.next()){
+                "_nome, senha, cvv, validade, salt, iv"
+                var iv=resultSet.getString("iv")
+                var salt=resultSet.getString("salt")
+               var senhatemp=SenhaBanco(decrypt(resultSet.getString("senha"),master_senha,salt.toByteArray(),iv.toByteArray()),resultSet.getString("_nome"),decrypt(resultSet.getString("cvv"),master_senha,salt.toByteArray(),iv.toByteArray()).toInt(),Validade.toValidade(decrypt(resultSet.getString("cvv"),master_senha,salt.toByteArray(),iv.toByteArray())),master_senha)
+                senhas.put(resultSet.getString("_nome"),senhatemp)
+            }
+
+
+        }catch (e: Exception){
+            return null
+        }
+        return senhas
+    }
+    }
+
+
+
 }
