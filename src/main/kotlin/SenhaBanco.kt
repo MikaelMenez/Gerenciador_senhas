@@ -1,65 +1,51 @@
 import java.sql.Connection
 import java.sql.DriverManager
-import java.sql.ResultSet
 import java.util.Base64
 
-class SenhaBanco(senha: String, override var _nome: String,master_senha: String) : Senhas(senha, _nome,master_senha) {
-
-    // Construtor secundário
-    constructor(senha: String, _nome: String, _cvv: Int, _validade: Validade,master_senha: String) : this(senha, _nome,master_senha) {
-        this._cvv = encrypt(_cvv.toString(), master_senha ,salt, iv)
-        this._validade = encrypt(_validade.toString(), master_senha,salt, iv)
-    }
+class SenhaBanco(
+    senha: String,
+    override var _nome: String,
+    masterSenha: String
+) : Senhas(senha, _nome, masterSenha) {
 
     private var _cvv = ""
-    fun getCVV(): String{
+    private var _validade = ""
+
+    constructor(
+        senha: String,
+        _nome: String,
+        _cvv: Int,
+        _validade: String,
+        masterSenha: String
+    ) : this(senha, _nome, masterSenha) {
+        this._cvv = encrypt(_cvv.toString(), masterSenha, salt, iv)
+        this._validade = encrypt(_validade.toString(), masterSenha, salt, iv)
+    }
+
+    fun getCVV(): String {
         return this._cvv
     }
 
-
-    private var _validade = ""
     fun getValidade(): String {
         return this._validade
     }
-    override fun createTable(connection: Connection): Exception? {
-        try {
-            val statement = connection.prepareStatement(
-                """
-                CREATE TABLE IF NOT EXISTS aplicativos_banco(
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    nome TEXT NOT NULL,
-                    senha TEXT NOT NULL,
-                    cvv TEXT NOT NULL,
-                    validade TEXT NOT NULL,
-                    salt TEXT NOT NULL,
-                    iv TEXT NOT NULL
-                )
-                """.trimIndent()
-            )
-            statement.execute()
-            return null
-        } catch (e: Exception) {
-            return e
-        }
-    }
 
-    override fun getByNome(senhaObj: Senhas,master_senha: String): Senhas? {
+    override fun getByNome(senhaObj: Senhas, masterSenha: String): Senhas? {
         try {
-            val statement = connection.createStatement()
-            val resultSet = statement.executeQuery("SELECT * FROM aplicativos_banco WHERE _nome='${senhaObj.getNome()}'")
+            val statement = connection.prepareStatement("SELECT * FROM aplicativos_banco WHERE nome = ?")
+            statement.setString(1, senhaObj.getNome())
+            val resultSet = statement.executeQuery()
 
             if (resultSet.next()) {
-                // Recupera salt e iv do banco
                 val dbSalt = Base64.getDecoder().decode(resultSet.getString("salt"))
                 val dbIv = Base64.getDecoder().decode(resultSet.getString("iv"))
+                val senhaDecrypted = decrypt(resultSet.getString("senha"), masterSenha, dbSalt, dbIv)
+                val cvvDecrypted = decrypt(resultSet.getString("cvv"), masterSenha, dbSalt, dbIv)
+                val validadeDecrypted = decrypt(resultSet.getString("validade"), masterSenha, dbSalt, dbIv)
 
-                return SenhaBanco(
-                    decrypt(resultSet.getString("senha"), master_senha,dbSalt, dbIv),
-                    resultSet.getString("_nome"),
-                    decrypt(resultSet.getString("cvv"), master_senha,dbSalt, dbIv).toInt(),
-                    Validade.toValidade(decrypt(resultSet.getString("validade"), master_senha,dbSalt, dbIv))
-                    ,master_senha
-                )
+
+
+                return SenhaBanco(senhaDecrypted, resultSet.getString("nome"), cvvDecrypted.toInt(), validadeDecrypted, masterSenha)
             }
             return null
         } catch (e: Exception) {
@@ -70,98 +56,109 @@ class SenhaBanco(senha: String, override var _nome: String,master_senha: String)
 
     override fun modify(id: Int, senhas: Senhas): Exception? {
         if (senhas is SenhaBanco) {
-        try {
-
-
-            val insertStatement = connection.prepareStatement(
-                "INSERT INTO aplicativos_banco (_nome, senha, cvv, validade, salt, iv) VALUES (?, ?, ?, ?, ?, ?)"
-            )
-            insertStatement.setString(1, senhas.getSenhaCriptografada())
-            insertStatement.setString(2, senhas.getNome())
-            insertStatement.setString(3, senhas.getCVV())
-            insertStatement.setString(4, senhas.getValidade())
-            insertStatement.setString(5, senhas.getsaltAsString())
-            insertStatement.setString(6, senhas.getIVAsString())
-            insertStatement.executeUpdate()
-            return null
-        }catch (e: Exception){
-            return e
+            try {
+                val updateStatement = connection.prepareStatement(
+                    "UPDATE aplicativos_banco SET nome = ?, senha = ?, cvv = ?, validade = ?, salt = ?, iv = ? WHERE id = ?"
+                )
+                updateStatement.setString(1, senhas.getNome())
+                updateStatement.setString(2, senhas.getSenhaCriptografada())
+                updateStatement.setString(3, senhas.getCVV())
+                updateStatement.setString(4, senhas.getValidade())
+                updateStatement.setString(5, senhas.getSaltBase64())
+                updateStatement.setString(6, senhas.getIVBase64())
+                updateStatement.setInt(7, id)
+                updateStatement.executeUpdate()
+                return null
+            } catch (e: Exception) {
+                e.printStackTrace()
+                return e
+            }
         }
-        }
-        else{
-            return Exception()
-        }
+        return Exception("Objeto não é do tipo SenhaBanco")
     }
 
     override fun deleteByNome(nome: String): Exception? {
         try {
-
-
-            val insertStatement = connection.prepareStatement(
-                "DELETE FROM aplicativos_banco WHERE nome=?"
+            val deleteStatement = connection.prepareStatement(
+                "DELETE FROM aplicativos_banco WHERE nome = ?"
             )
-            insertStatement.setString(1,nome)
-            insertStatement.execute()
-
+            deleteStatement.setString(1, nome)
+            deleteStatement.execute()
             return null
-        }catch (e: Exception){
+        } catch (e: Exception) {
+            e.printStackTrace()
             return e
         }
     }
 
-    override fun insertData(senhas: Senhas) : Exception?{
+    override fun insertData(senhas: Senhas): Exception? {
         if (senhas is SenhaBanco) {
-        try {
-
-
-        val insertStatement = connection.prepareStatement(
-            "'UPDATE aplicativos_banco SET senha=?, nome=?, cvv=?, validade=?, salt=?, iv=? WHERE id=?'"
-        )
-        insertStatement.setString(1, senhas.getSenhaCriptografada())
-        insertStatement.setString(2, senhas.getNome())
-        insertStatement.setString(3, senhas.getCVV())
-        insertStatement.setString(4, senhas.getValidade())
-        insertStatement.setString(5, senhas.getsaltAsString())
-        insertStatement.setString(6, senhas.getIVAsString())
-        insertStatement.executeUpdate()
-            return null
-    }catch (e: Exception){
-        return e
-    }
-
-        }
-        else{
-            return Exception()
-        }
-}
-    companion object{
-      fun getAll(master_senha: String): HashMap<String, SenhaBanco>?{
-        var senhas= HashMap<String,SenhaBanco>()
-          var connection: Connection= DriverManager.getConnection("jdbc:sqlite:gerenciador.db")
-        try {
-
-
-            val insertStatement = connection.createStatement()
-            val resultSet: ResultSet =insertStatement.executeQuery(
-                "SELECT * FROM aplicativos_banco"
-            )
-
-            while (resultSet.next()){
-                "_nome, senha, cvv, validade, salt, iv"
-                var iv=resultSet.getString("iv")
-                var salt=resultSet.getString("salt")
-               var senhatemp=SenhaBanco(decrypt(resultSet.getString("senha"),master_senha,salt.toByteArray(),iv.toByteArray()),resultSet.getString("_nome"),decrypt(resultSet.getString("cvv"),master_senha,salt.toByteArray(),iv.toByteArray()).toInt(),Validade.toValidade(decrypt(resultSet.getString("cvv"),master_senha,salt.toByteArray(),iv.toByteArray())),master_senha)
-                senhas.put(resultSet.getString("_nome"),senhatemp)
+            try {
+                val insertStatement = connection.prepareStatement(
+                    "INSERT INTO aplicativos_banco (nome, senha, cvv, validade, salt, iv) VALUES (?, ?, ?, ?, ?, ?)"
+                )
+                insertStatement.setString(1, senhas.getNome())
+                insertStatement.setString(2, senhas.getSenhaCriptografada())
+                insertStatement.setString(3, senhas.getCVV())
+                insertStatement.setString(4, senhas.getValidade())
+                insertStatement.setString(5, senhas.getSaltBase64())
+                insertStatement.setString(6, senhas.getIVBase64())
+                insertStatement.executeUpdate()
+                return null
+            } catch (e: Exception) {
+                e.printStackTrace()
+                return e
             }
-
-
-        }catch (e: Exception){
-            return null
         }
-        return senhas
+        return Exception("Objeto não é do tipo SenhaBanco")
     }
+
+    companion object {
+        fun createTable(connection: Connection): Exception? {
+            return try {
+                val statement = connection.prepareStatement(
+                    """
+                    CREATE TABLE IF NOT EXISTS aplicativos_banco(
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        nome TEXT NOT NULL,
+                        senha TEXT NOT NULL,
+                        cvv TEXT NOT NULL,
+                        validade TEXT NOT NULL,
+                        salt TEXT NOT NULL,
+                        iv TEXT NOT NULL
+                    )
+                """.trimIndent()
+                )
+                statement.execute()
+                null
+            } catch (e: Exception) {
+                e.printStackTrace()
+                e
+            }
+        }
+
+        fun getAll(masterSenha: String): HashMap<String, SenhaBanco>? {
+            val senhas = HashMap<String, SenhaBanco>()
+            val connection: Connection = DriverManager.getConnection("jdbc:sqlite:gerenciador.db")
+            try {
+                val statement = connection.createStatement()
+                val resultSet = statement.executeQuery("SELECT * FROM aplicativos_banco")
+                while (resultSet.next()) {
+                    val salt = Base64.getDecoder().decode(resultSet.getString("salt"))
+                    val iv = Base64.getDecoder().decode(resultSet.getString("iv"))
+                    val senhaDecrypted = decrypt(resultSet.getString("senha"), masterSenha, salt, iv)
+                    val nome = resultSet.getString("nome")
+                    val cvvDecrypted = decrypt(resultSet.getString("cvv"), masterSenha, salt, iv).toInt()
+                    val validadeDecrypted = decrypt(resultSet.getString("validade"), masterSenha, salt, iv)
+
+                    val senhaBanco = SenhaBanco(senhaDecrypted, nome, cvvDecrypted, validadeDecrypted, masterSenha)
+                    senhas[nome] = senhaBanco
+                }
+                return senhas
+            } catch (e: Exception) {
+                e.printStackTrace()
+                return null
+            }
+        }
     }
-
-
-
 }

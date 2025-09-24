@@ -1,12 +1,19 @@
+import java.sql.Connection
+import java.sql.DriverManager
 import javax.swing.JOptionPane
 
 fun main(){
-   JOptionPane.showMessageDialog(null, "Bem Vindo ao Gerensenhador")
-   var senhaMestra: String
-
-       senhaMestra= JOptionPane.showInputDialog("Digite a senha mestre")
+    try {
 
 
-   val front=Front(senhaMestra)
-   front.start()
+    var connection: Connection= DriverManager.getConnection("jdbc:sqlite:gerenciador.db")
+    SenhaGeral.createTable(connection)
+    SenhaBanco.createTable(connection)
+    val senha= JOptionPane.showInputDialog(null,"digite sua senha mestre:")
+    val front=Front(senha)
+    front.open()
+    }
+    catch (e: Exception){
+        JOptionPane.showMessageDialog(null,e.toString())
+    }
 }

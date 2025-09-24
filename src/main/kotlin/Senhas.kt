@@ -2,115 +2,105 @@ import java.security.SecureRandom
 import java.sql.Connection
 import java.sql.DriverManager
 import java.util.Base64
-import javax.crypto.spec.IvParameterSpec
-import javax.crypto.spec.SecretKeySpec
 import javax.crypto.Cipher
+import javax.crypto.IllegalBlockSizeException
 import javax.crypto.SecretKeyFactory
+import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.PBEKeySpec
-import kotlin.use
+import javax.crypto.spec.SecretKeySpec
 
 abstract class Senhas() : DAO {
+
     protected var encryptedSenha: String = ""
-    fun getSenhaCriptografada(): String{
+
+    fun getSenhaCriptografada(): String {
         return this.encryptedSenha
     }
+
     protected open var _nome: String = ""
+
     fun getNome(): String {
         return this._nome
     }
 
     protected var salt: ByteArray = ByteArray(0)
-    fun getSalt(): String{
-        return this.salt.toString()
-    }
-        // Armazenar como bytes
-    protected var iv: ByteArray = ByteArray(0)
-    fun getIV(): String{
-        return this.iv.toString()
-    }
-    var connection: Connection= DriverManager.getConnection("jdbc:sqlite:gerenciador.db")
-    // Armazenar como bytes
 
-    constructor(senha: String, nome: String,master_senha: String) : this() {
-        this.salt = generateValidSalt()   // 16 bytes
-        this.iv = generateValidIV()     // 16 bytes
-        this.encryptedSenha = encrypt(senha, master_senha ,salt, iv)
+    fun getSaltBase64(): String {
+        return Base64.getEncoder().encodeToString(this.salt)
+    }
+
+    protected var iv: ByteArray = ByteArray(0)
+
+    fun getIVBase64(): String {
+        return Base64.getEncoder().encodeToString(this.iv)
+    }
+
+    var connection: Connection = DriverManager.getConnection("jdbc:sqlite:gerenciador.db")
+
+    constructor(senha: String, nome: String, masterSenha: String) : this() {
+        this.salt = generateValidSalt()
+        this.iv = generateValidIV()
+        this.encryptedSenha = encrypt(senha, masterSenha, salt, iv)
         this._nome = nome
     }
-        fun getSenhaDecriptografada(master_senha: String): String {
-            return decrypt(encryptedSenha, master_senha ,salt, iv)
+
+    /**
+     * Retorna a senha descriptografada usando a senha mestre fornecida.
+     */
+    fun getSenhaDecriptografada(masterSenha: String): String {
+        return decrypt(this.encryptedSenha, masterSenha, this.salt, this.iv)
+    }
+
+    companion object {
+
+        private const val ITERATION_COUNT = 65536
+        private const val KEY_LENGTH = 256
+
+        fun encrypt(text: String, password: String, salt: ByteArray, iv: ByteArray): String {
+            val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
+            val spec = PBEKeySpec(password.toCharArray(), salt, ITERATION_COUNT, KEY_LENGTH)
+            val secretKey = factory.generateSecret(spec)
+            val secret = SecretKeySpec(secretKey.encoded, "AES")
+
+            val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+            cipher.init(Cipher.ENCRYPT_MODE, secret, IvParameterSpec(iv))
+            val encrypted = cipher.doFinal(text.toByteArray(Charsets.UTF_8))
+            return Base64.getEncoder().encodeToString(encrypted)
         }
 
+        fun decrypt(encryptedText: String, password: String, salt: ByteArray, iv: ByteArray): String {
+            if (encryptedText.isBlank()) {
+                throw IllegalArgumentException("Encrypted text is empty or blank")
+            }
+            val decodedBytes = Base64.getDecoder().decode(encryptedText)
+            if (decodedBytes.size == 0 || decodedBytes.size % 16 != 0) {
+                throw IllegalBlockSizeException("Invalid encrypted data length: ${decodedBytes.size}")
+            }
 
+            val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
+            val spec = PBEKeySpec(password.toCharArray(), salt, ITERATION_COUNT, KEY_LENGTH)
+            val secretKey = factory.generateSecret(spec)
+            val secret = SecretKeySpec(secretKey.encoded, "AES")
 
-    companion object{
-         fun generateValidIV(): ByteArray {
-            val random = SecureRandom()
-            val ivBytes = ByteArray(16) // 16 bytes = 128 bits (EXATAMENTE)
-            random.nextBytes(ivBytes)
-            return ivBytes
+            val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+            cipher.init(Cipher.DECRYPT_MODE, secret, IvParameterSpec(iv))
+
+            val decrypted = cipher.doFinal(decodedBytes)
+            return String(decrypted, Charsets.UTF_8)
         }
-         fun generateValidSalt(): ByteArray {
-            val random = SecureRandom()
-            val saltBytes = ByteArray(16) // 16 bytes = 128 bits (EXATAMENTE)
-            random.nextBytes(saltBytes)
-            return saltBytes
+
+        fun generateValidSalt(): ByteArray {
+            val salt = ByteArray(16)
+            SecureRandom().nextBytes(salt)
+            return salt
         }
-     fun encrypt(plainText: String, master_senha: String, salt: ByteArray, iv: ByteArray): String {
-        val key=deriveKey(master_senha,salt)
-        val keySpec = SecretKeySpec(key, "AES")
-        val ivSpec = IvParameterSpec(iv)
 
-        val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-        cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec)
-
-        val encryptedBytes = cipher.doFinal(plainText.toByteArray(Charsets.UTF_8))
-        return Base64.getEncoder().encodeToString(encryptedBytes)
+        fun generateValidIV(): ByteArray {
+            val iv = ByteArray(16)
+            SecureRandom().nextBytes(iv)
+            return iv
+        }
     }
 
-     fun decrypt(encryptedText: String,master_senha: String, salt: ByteArray, iv: ByteArray): String {
-        val key=deriveKey(master_senha,salt)
-        val keySpec = SecretKeySpec(key, "AES")
-        val ivSpec = IvParameterSpec(iv)
-
-        val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-        cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec)
-
-        val encryptedBytes = Base64.getDecoder().decode(encryptedText)
-        val decryptedBytes = cipher.doFinal(encryptedBytes)
-        return String(decryptedBytes, Charsets.UTF_8)
-    }
-     fun deriveKey(password: String, salt: ByteArray): ByteArray {
-        val spec = PBEKeySpec(
-            password.toCharArray(),
-            salt,
-            100000,     // 100.000 iterações
-            256         // 256 bits = 32 bytes
-        )
-
-        val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
-        return factory.generateSecret(spec).encoded
-    }
-    }
-    fun getsaltAsString(): String {
-        return Base64.getEncoder().encodeToString(salt)
-    }
-
-    fun getIVAsString(): String {
-        return Base64.getEncoder().encodeToString(iv)
-    }
-
-
-        override abstract fun createTable(connection: Connection): java.lang.Exception?
-
-        override abstract fun insertData(senhas: Senhas): Exception?
-
-
-    override abstract fun getByNome(senhas: Senhas,master_senha: String): Senhas?;
-
-
-        override abstract fun modify(id: Int,senhas: Senhas): Exception?
-
-
-    override abstract fun deleteByNome(nome:String) : Exception?
+    // Métodos DAO abstratos para ser implementados nas subclasses
 }

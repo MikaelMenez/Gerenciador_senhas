@@ -52,7 +52,7 @@ class Front {
                 val senha = JOptionPane.showInputDialog("Digite sua nova senha") ?: ""
                 val nome = JOptionPane.showInputDialog("Digite o nome do Titular") ?: ""
                 val cvv = JOptionPane.showInputDialog("Digite o cvv")?.toIntOrNull() ?: 0
-                val data = Validade.toValidade(JOptionPane.showInputDialog("Digite a validade") ?: "")
+                val data =JOptionPane.showInputDialog("Digite a validade") ?: ""
                 val senhaNova = SenhaBanco(senha, nome, cvv, data, senhaMestre ?: "")
                 senhaNova.insertData(senhaNova)
                 senhasB?.put(senhaNova.getNome(), senhaNova)

@@ -1,8 +1,6 @@
-import java.sql.Connection
-import kotlin.use
+
 
 interface DAO {
-    fun createTable(connection: Connection): java.lang.Exception?
 
     fun insertData(senhas: Senhas): Exception?
 
