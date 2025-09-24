@@ -1,7 +1,14 @@
 plugins {
     kotlin("jvm") version "2.1.21"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
+
+tasks.shadowJar {
+    manifest {
+        attributes ["Main-Class"]= "MainKt"
+    }
+}
 group = "org.example"
 version = "1.0-SNAPSHOT"
 
