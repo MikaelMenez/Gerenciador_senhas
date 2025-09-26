@@ -6,11 +6,11 @@ fun main(){
     try {
 
 
-    var connection: Connection= DriverManager.getConnection("jdbc:sqlite:gerenciador.db")
+        var connection: Connection= DriverManager.getConnection("jdbc:sqlite:gerenciador.db")
     SenhaGeral.createTable(connection)
     SenhaBanco.createTable(connection)
     val senha= JOptionPane.showInputDialog(null,"digite sua senha mestre:")
-    val front=Front(senha)
+        val front=Front(senha)
     front.open()
     }
     catch (e: Exception){

@@ -152,8 +152,7 @@ class SenhaBanco(
                     val validadeDecrypted = decrypt(resultSet.getString("validade"), masterSenha, salt, iv)
 
                     val senhaBanco = SenhaBanco(senhaDecrypted, nome, cvvDecrypted, validadeDecrypted, masterSenha)
-                    senhas[nome] = senhaBanco
-                }
+                    senhas.put(nome,senhaBanco)                }
                 return senhas
             } catch (e: Exception) {
                 e.printStackTrace()

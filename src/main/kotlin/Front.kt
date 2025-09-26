@@ -50,7 +50,7 @@ class Front {
         when (opcao) {
             1 -> {
                 val senha = JOptionPane.showInputDialog("Digite sua nova senha") ?: ""
-                val nome = JOptionPane.showInputDialog("Digite o nome do Titular") ?: ""
+                val nome = JOptionPane.showInputDialog("Digite o nome do banco") ?: ""
                 val cvv = JOptionPane.showInputDialog("Digite o cvv")?.toIntOrNull() ?: 0
                 val data =JOptionPane.showInputDialog("Digite a validade") ?: ""
                 val senhaNova = SenhaBanco(senha, nome, cvv, data, senhaMestre ?: "")
@@ -106,8 +106,10 @@ class Front {
 
     fun MenuBanco() {
         JOptionPane.showMessageDialog(null, "Você tem ${senhasB?.size ?: 0} senhas de Banco")
+        var senhas= senhasB?.keys?.joinToString("\n")
+        JOptionPane.showMessageDialog(null,"seus bancos são: ${senhas}")
 
-        val nomeBusca = JOptionPane.showInputDialog("Digite o nome do titular da senha que deseja acessar:")
+        val nomeBusca = JOptionPane.showInputDialog("Digite o nome da senha que deseja acessar: ")
 
         if (nomeBusca.isNullOrBlank() || !senhasB!!.containsKey(nomeBusca)) {
             JOptionPane.showMessageDialog(null, "Nome não encontrado, tente novamente!")
@@ -117,7 +119,7 @@ class Front {
 
         val senha = senhasB!![nomeBusca]!!
 
-        JOptionPane.showMessageDialog(null, "Nome do Títular: ${senha.getNome()}")
+        JOptionPane.showMessageDialog(null, "Nome do banco: ${senha.getNome()}")
         JOptionPane.showMessageDialog(null, "Senha do Cartão: ${senha.getSenhaDecriptografada(senhaMestre ?: "")}")
         JOptionPane.showMessageDialog(null, "Validade do Cartão: ${senha.getValidade()}")
 
@@ -126,6 +128,8 @@ class Front {
 
     fun menuGeral() {
         JOptionPane.showMessageDialog(null, "Você tem ${senhasG?.size ?: 0} senhas")
+        var senhas= senhasG?.keys?.joinToString("\n")
+        JOptionPane.showMessageDialog(null,"seus apps são: ${senhas}")
 
         val nomeBusca = JOptionPane.showInputDialog("Digite o nome da senha que deseja acessar:")
 

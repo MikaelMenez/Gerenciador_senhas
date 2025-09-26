@@ -118,7 +118,7 @@ class SenhaGeral(senha: String, override var _nome: String, masterSenha: String)
                     val nome = resultSet.getString("nome")
 
                     val senhaGeral = SenhaGeral(senhaDecrypted, nome, masterSenha)
-                    senhas[nome] = senhaGeral
+                    senhas.put(nome,senhaGeral)
                 }
                 return senhas
             } catch (e: Exception) {
