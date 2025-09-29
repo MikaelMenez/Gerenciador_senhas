@@ -27,14 +27,17 @@ Em SenhaBanco, os campos _cvv e _validade são privados, com acesso somente atra
 Ao planejar a arquitetura, decidimos usar a interface DAO.kt por dois motivos principais. Primeiro, para aplicar na prática o conceito de abstração e polimorfismo, que era um dos objetivos da disciplina. Segundo, e mais importante, percebemos que separar a lógica de acesso a dados (INSERT, SELECT, etc.) das nossas regras de negócio tornaria o projeto muito mais organizado e fácil de manter.
 Separação de Responsabilidades: Ela retira as regras de negócio (as regras dentro das classes de senha) da lógica de persistência (como os dados são escritos e lidos do banco de dados SQL).
 Flexibilidade: Se no futuro o sistema precisasse mudar de SQLite para outro banco de dados (como PostgreSQL ou um arquivo JSON), bastaria criar novas implementações da interface DAO sem precisar alterar as classes Front ou Main.
+Modelagem do problema:
+    <object type="image/svg+xml" data="./uml.svg">
+      O seu SVG não foi carregado.
+    </object>
 
-
-3. Análise dos Componentes
+4. Análise dos Componentes
 Main.kt: Cumpre seu papel iniciando a aplicação de forma limpa. Ele inicializa o banco de dados e entrega o controle para a camada de apresentação, o que é uma boa prática.
 Front.kt: É responsável por apresentar a interface gráfica para o usuário.
 
 
-4. Conclusão
+5. Conclusão
 Ao desenvolver este projeto, nosso principal objetivo foi aplicar na prática os conceitos fundamentais da Programação Orientada a Objetos que aprendemos na disciplina. Buscamos estruturar o código de uma forma limpa e organizada, utilizando uma hierarquia de herança com a classe abstrata Senhas e suas subclasses, SenhaGeral e SenhaBanco. A implementação da interface DAO, foi uma decisão de design que consideramos muito acertada, pois nos permitiu separar de forma clara as regras de negócio do acesso ao banco de dados, além de permitir que outros conceitos de poo fossem aplicados na prática.
 
 
