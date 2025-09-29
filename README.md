@@ -17,6 +17,7 @@ O sistema foi desenvolvido em Kotlin, com banco de dados local via SQLite e inte
 3.1. Análise da Arquitetura e Aplicação de Conceitos de POO:
 
 O projeto está estruturado com foco em seguir os conceitos da orientação a objetos.
+
 3.2. Abstração e Herança:
 
 O principal ponto de destaque é a hierarquia de classes bem definida:
@@ -51,8 +52,11 @@ Flexibilidade: Se no futuro o sistema precisasse mudar de SQLite para outro banc
 Main.kt: Cumpre seu papel iniciando a aplicação de forma limpa. Ele inicializa o banco de dados e entrega o controle para a camada de apresentação, o que é uma boa prática.
 Front.kt: É responsável por apresentar a interface gráfica para o usuário.
 
+4. Ferramentas utilizadas:
+  para a elaboração do projeto, foi utilizado algumas bibliotecas, tais como, javax.swing.JOptionPane para a interface de usuário, Java.sql para acesso e comunicação com o banco de dados ,Java.security e java.crypto para a criptografia e decriptografia dos dados sensíveis. A principal IDE utilizada pelos integrantes do grupo foi o intellij, justamente por ter muita integração com a linguagem escolhida e nela utilizamos a linguagem kotlin, já que ela também roda na JVM e facilita a ubiquidade e facilitaria caso escalássemos o projeto para um app android e a mesma aplica de forma excepcional os conceitos de POO.Além de que o projeto inteiro foi estruturado num único pacote a fim de promover a simplicidade, além de que o sistema foi compilado num arquivo .jar, para facilitar o uso do público. 
 
+ 
 5. Conclusão
-Ao desenvolver este projeto, nosso principal objetivo foi aplicar na prática os conceitos fundamentais da Programação Orientada a Objetos que aprendemos na disciplina. Buscamos estruturar o código de uma forma limpa e organizada, utilizando uma hierarquia de herança com a classe abstrata Senhas e suas subclasses, SenhaGeral e SenhaBanco. A implementação da interface DAO, foi uma decisão de design que consideramos muito acertada, pois nos permitiu separar de forma clara as regras de negócio do acesso ao banco de dados, além de permitir que outros conceitos de poo fossem aplicados na prática.
+Ao desenvolver este projeto, nosso principal objetivo foi aplicar na prática os conceitos fundamentais da Programação Orientada a Objetos que aprendemos na disciplina. Buscamos estruturar o código de uma forma limpa e organizada, utilizando uma hierarquia de herança com a classe abstrata Senhas e suas subclasses, SenhaGeral e SenhaBanco. A implementação da interface DAO, foi uma decisão de design que consideramos muito acertada, pois nos permitiu separar de forma clara as regras de negócio do acesso ao banco de dados, além de permitir que outros conceitos de poo fossem aplicados na prática. Dito isso, nós cremos que a disciplina soube explicar os conceitos de OO de maneira muito didática e com um ótimo equilíbrio entre prática e teoria, sabemos que o projeto ainda pode ser melhor desenvolvido, mas por enquanto pensamos que já é um exemplo bem estrutudado do que se pode fazer com OO.
 
 
