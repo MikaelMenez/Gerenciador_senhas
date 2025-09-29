@@ -27,10 +27,10 @@ Em SenhaBanco, os campos _cvv e _validade são privados, com acesso somente atra
 Ao planejar a arquitetura, decidimos usar a interface DAO.kt por dois motivos principais. Primeiro, para aplicar na prática o conceito de abstração e polimorfismo, que era um dos objetivos da disciplina. Segundo, e mais importante, percebemos que separar a lógica de acesso a dados (INSERT, SELECT, etc.) das nossas regras de negócio tornaria o projeto muito mais organizado e fácil de manter.
 Separação de Responsabilidades: Ela retira as regras de negócio (as regras dentro das classes de senha) da lógica de persistência (como os dados são escritos e lidos do banco de dados SQL).
 Flexibilidade: Se no futuro o sistema precisasse mudar de SQLite para outro banco de dados (como PostgreSQL ou um arquivo JSON), bastaria criar novas implementações da interface DAO sem precisar alterar as classes Front ou Main.
+
+
 Modelagem do problema:
-    <object type="image/svg+xml" data="./uml.svg">
-      O seu SVG não foi carregado.
-    </object>
+![alt text](https://github.com/MikaelMenez/Gerenciador_senhas/blob/main/Uml.svg)
 
 4. Análise dos Componentes
 Main.kt: Cumpre seu papel iniciando a aplicação de forma limpa. Ele inicializa o banco de dados e entrega o controle para a camada de apresentação, o que é uma boa prática.
