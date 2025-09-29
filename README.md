@@ -1,5 +1,15 @@
-1. Introdução
-O projeto consiste em um sistema de gerenciamento de senhas desenvolvido em Kotlin, com banco de dados local via SQLite e interface de usuário baseada em javax.swing.JOptionPane. O software foi desenvolvido com base nos conceitos fundamentais de Programação Orientada a Objetos, como Herança, Polimorfismo, Encapsulamento e Abstração. A arquitetura é baseada em uma classe abstrata Senhas e suas subclasses (SenhaGeral, SenhaBanco), seguindo o padrão de projeto DAO (Data Access Object) para separação de responsabilidades.
+1. apresentação:
+Gerensenhador é um projeto que  consiste em um sistema de gerenciamento de senhas  A equipe responsável pela elaboração do projeto com seus nomes e matrículas respectivas:
+
+Mikael Menezes da Rocha Barreto, 20240008889,Felipe Rodrigues Coelho 
+20240008664,João Matheus da Silva Bernardo 20240009204,Ruan Campelo de Pontes
+20240101758,Ana Carolina de Sousa Camilo 20240008548.
+
+Seu código fonte está armazenado neste repositório no github
+
+2. Introdução:
+O sistema foi desenvolvido em Kotlin, com banco de dados local via SQLite e interface de usuário baseada em javax.swing.JOptionPane. O software foi desenvolvido com base nos conceitos fundamentais de Programação Orientada a Objetos, como Herança, Polimorfismo, Encapsulamento e Abstração. A arquitetura é baseada em uma classe abstrata Senhas e suas subclasses (SenhaGeral, SenhaBanco), seguindo o padrão de projeto DAO (Data Access Object) para separação de responsabilidades.
+
 
 2. Análise da Arquitetura e Aplicação de Conceitos de POO
 O projeto está estruturado com foco em seguir os conceitos da orientação a objetos.
