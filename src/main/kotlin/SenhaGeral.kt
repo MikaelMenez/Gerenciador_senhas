@@ -1,8 +1,8 @@
 import java.sql.Connection
 import java.sql.DriverManager
-import java.util.Base64
+import java.util.*
 
-class SenhaGeral(senha: String, override var nome: String, masterSenha: String) : Senhas(senha, nome, masterSenha) {
+class SenhaGeral(senha: String, var nome: String, masterSenha: String) : Senhas(senha, nome, masterSenha) {
 
     override fun getByNome(senhaObj: Senhas, masterSenha: String): Senhas? {
         try {
@@ -112,13 +112,11 @@ class SenhaGeral(senha: String, override var nome: String, masterSenha: String) 
                 val statement = connection.createStatement()
                 val resultSet = statement.executeQuery("SELECT * FROM aplicativos")
                 while (resultSet.next()) {
-                    val salt = Base64.getDecoder().decode(resultSet.getString("salt"))
-                    val iv = Base64.getDecoder().decode(resultSet.getString("iv"))
-                    val senhaDecrypted = decrypt(resultSet.getString("senha"), masterSenha, salt, iv)
-                    val nome = resultSet.getString("nome")
+                    val nome = resultSet.getDecryptedField("nome", masterSenha)
+                    val senhaDecrypted = resultSet.getDecryptedField("senha", masterSenha)
 
                     val senhaGeral = SenhaGeral(senhaDecrypted, nome, masterSenha)
-                    senhas.put(nome,senhaGeral)
+                    senhas[nome] = senhaGeral
                 }
                 return senhas
             } catch (e: Exception) {
