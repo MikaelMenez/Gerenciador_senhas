@@ -17,8 +17,8 @@ abstract class Senhas() : DAO {
     var connection: Connection = DriverManager.getConnection("jdbc:sqlite:gerenciador.db")
 
     constructor(senha: String, nome: String, masterSenha: String) : this() {
-        this.salt = generateValidSalt()
-        this.iv = generateValidIV()
+        this.salt = generateByteArray()
+        this.iv = generateByteArray()
         this.encryptedSenha = encrypt(senha, masterSenha, salt, iv)
         this.nome = nome
     }
@@ -82,16 +82,10 @@ abstract class Senhas() : DAO {
             return cipher
         }
 
-        fun generateValidSalt(): ByteArray {
-            val salt = ByteArray(16)
-            SecureRandom().nextBytes(salt)
-            return salt
-        }
-
-        fun generateValidIV(): ByteArray {
-            val iv = ByteArray(16)
-            SecureRandom().nextBytes(iv)
-            return iv
+        fun generateByteArray(): ByteArray {
+            val array = ByteArray(16)
+            SecureRandom().nextBytes(array)
+            return array
         }
     }
 
