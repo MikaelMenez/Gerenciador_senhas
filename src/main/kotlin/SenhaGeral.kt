@@ -2,8 +2,7 @@ import java.sql.Connection
 import java.sql.DriverManager
 import java.util.*
 
-class SenhaGeral(senha: String, var nome: String, masterSenha: String) : Senhas(senha, nome, masterSenha) {
-
+class SenhaGeral(senha: String, nome: String, masterSenha: String) : Senhas(senha, nome, masterSenha) {
     override fun getByNome(senhaObj: Senhas, masterSenha: String): Senhas? {
         try {
             val statement = connection.prepareStatement("SELECT * FROM aplicativos WHERE nome = ?")

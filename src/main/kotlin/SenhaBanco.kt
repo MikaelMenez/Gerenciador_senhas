@@ -16,10 +16,9 @@ inline fun <T> Connection.usePrepared(
 
 class SenhaBanco(
     senha: String,
-    var nome: String,
+    nome: String,
     masterSenha: String
 ) : Senhas(senha, nome, masterSenha) {
-
     private var cvv = ""
     private var validade = ""
 

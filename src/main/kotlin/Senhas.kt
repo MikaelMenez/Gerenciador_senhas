@@ -11,7 +11,7 @@ import javax.crypto.spec.SecretKeySpec
 
 abstract class Senhas() : DAO {
     protected var encryptedSenha: String = ""
-    private var nome: String = ""
+    private var _nome: String = ""
     protected var salt: ByteArray = ByteArray(0)
     protected var iv: ByteArray = ByteArray(0)
     var connection: Connection = DriverManager.getConnection("jdbc:sqlite:gerenciador.db")
@@ -20,7 +20,7 @@ abstract class Senhas() : DAO {
         this.salt = generateByteArray()
         this.iv = generateByteArray()
         this.encryptedSenha = encrypt(senha, masterSenha, salt, iv)
-        this.nome = nome
+        this._nome = nome
     }
 
     fun getSenhaCriptografada(): String {
@@ -28,7 +28,7 @@ abstract class Senhas() : DAO {
     }
 
     fun getNome(): String {
-        return this.nome
+        return this._nome
     }
 
     fun getSaltBase64(): String {
