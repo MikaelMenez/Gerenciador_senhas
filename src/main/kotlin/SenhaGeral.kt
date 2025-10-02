@@ -2,7 +2,7 @@ import java.sql.Connection
 import java.sql.DriverManager
 import java.util.Base64
 
-class SenhaGeral(senha: String, override var _nome: String, masterSenha: String) : Senhas(senha, _nome, masterSenha) {
+class SenhaGeral(senha: String, override var nome: String, masterSenha: String) : Senhas(senha, nome, masterSenha) {
 
     override fun getByNome(senhaObj: Senhas, masterSenha: String): Senhas? {
         try {

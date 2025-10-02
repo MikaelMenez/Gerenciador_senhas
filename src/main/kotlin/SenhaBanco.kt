@@ -4,9 +4,9 @@ import java.util.Base64
 
 class SenhaBanco(
     senha: String,
-    override var _nome: String,
+    override var nome: String,
     masterSenha: String
-) : Senhas(senha, _nome, masterSenha) {
+) : Senhas(senha, nome, masterSenha) {
 
     private var _cvv = ""
     private var _validade = ""
