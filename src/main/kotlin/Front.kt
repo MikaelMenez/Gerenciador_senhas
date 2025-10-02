@@ -5,14 +5,10 @@ class Front {
     var senhasG: HashMap<String, SenhaGeral>?
     var senhaMestre: String? = null
 
-    constructor(master_senha: String) {
-        senhasB = SenhaBanco.getAll(master_senha) ?: HashMap()
-        senhasG = SenhaGeral.getAll(master_senha) ?: HashMap()
-        senhaMestre = master_senha
-    }
-
-    fun start() {
-        open()
+    constructor(masterSenha: String) {
+        senhasB = SenhaBanco.getAll(masterSenha) ?: HashMap()
+        senhasG = SenhaGeral.getAll(masterSenha) ?: HashMap()
+        senhaMestre = masterSenha
     }
 
     fun open() {
@@ -52,13 +48,14 @@ class Front {
                 val senha = JOptionPane.showInputDialog("Digite sua nova senha") ?: ""
                 val nome = JOptionPane.showInputDialog("Digite o nome do banco") ?: ""
                 val cvv = JOptionPane.showInputDialog("Digite o cvv")?.toIntOrNull() ?: 0
-                val data =JOptionPane.showInputDialog("Digite a validade") ?: ""
+                val data = JOptionPane.showInputDialog("Digite a validade") ?: ""
                 val senhaNova = SenhaBanco(senha, nome, cvv, data, senhaMestre ?: "")
                 senhaNova.insertData(senhaNova)
                 senhasB?.put(senhaNova.getNome(), senhaNova)
                 JOptionPane.showMessageDialog(null, "Senha nova Adicionada com sucesso!")
                 open()
             }
+
             2 -> {
                 val senha = JOptionPane.showInputDialog("Digite sua nova senha") ?: ""
                 val nome = JOptionPane.showInputDialog("Digite o nome da sua Senha") ?: ""
@@ -68,6 +65,7 @@ class Front {
                 JOptionPane.showMessageDialog(null, "Senha nova Adicionada com sucesso!")
                 open()
             }
+
             3 -> open()
             else -> {
                 JOptionPane.showMessageDialog(null, "Ação inválida, tente novamente")
@@ -88,14 +86,16 @@ class Front {
                 if (senhasB.isNullOrEmpty()) {
                     JOptionPane.showMessageDialog(null, "Você não possui senhas de banco cadastradas")
                     open()
-                } else MenuBanco()
+                } else menuBanco()
             }
+
             2 -> {
                 if (senhasG.isNullOrEmpty()) {
                     JOptionPane.showMessageDialog(null, "Você não possui senhas cadastradas")
                     open()
                 } else menuGeral()
             }
+
             3 -> open()
             else -> {
                 JOptionPane.showMessageDialog(null, "Ação inválida, tente novamente")
@@ -104,16 +104,16 @@ class Front {
         }
     }
 
-    fun MenuBanco() {
+    fun menuBanco() {
         JOptionPane.showMessageDialog(null, "Você tem ${senhasB?.size ?: 0} senhas de Banco")
-        var senhas= senhasB?.keys?.joinToString("\n")
-        JOptionPane.showMessageDialog(null,"seus bancos são: ${senhas}")
+        val senhas = senhasB?.keys?.joinToString("\n")
+        JOptionPane.showMessageDialog(null, "seus bancos são: $senhas")
 
         val nomeBusca = JOptionPane.showInputDialog("Digite o nome da senha que deseja acessar: ")
 
         if (nomeBusca.isNullOrBlank() || !senhasB!!.containsKey(nomeBusca)) {
             JOptionPane.showMessageDialog(null, "Nome não encontrado, tente novamente!")
-            MenuBanco()
+            menuBanco()
             return
         }
 
@@ -128,8 +128,8 @@ class Front {
 
     fun menuGeral() {
         JOptionPane.showMessageDialog(null, "Você tem ${senhasG?.size ?: 0} senhas")
-        var senhas= senhasG?.keys?.joinToString("\n")
-        JOptionPane.showMessageDialog(null,"seus apps são: ${senhas}")
+        val senhas = senhasG?.keys?.joinToString("\n")
+        JOptionPane.showMessageDialog(null, "seus apps são: $senhas")
 
         val nomeBusca = JOptionPane.showInputDialog("Digite o nome da senha que deseja acessar:")
 
